@@ -39,18 +39,16 @@ def hello():
 #POST student
 @app.route('/students', methods=['POST'])
 def create_student():
-    if not request.form or not "first_name" in request.form or not "last_name" in request.form or not "student_id" in request.form or not "course" in request.form:
-        abort(400)
-    else:
-        student = {
-            "first_name" : request.form["first_name"],
-            "last_name"  : request.form["last_name"],
-            "student_id" : request.form["student_id"],
-            "course"     : request.form["course"]
+    data = request.get_json()  
+    student = {
+            "first_name" : data['first_name'],
+            "last_name"  : data['last_name'],
+            "student_id" : data['student_id'],
+            "course"     : data['course']
         }
     DB['students'].append(student)
-    return jsonify({"student" : DB['students']}),201
-
+    return jsonify({"student" : DB['students']})
+    
 
 #GET student ID
 @app.route('/students', methods=['GET'])
@@ -65,13 +63,11 @@ def get_student():
 #POST classes
 @app.route('/classes', methods=['POST'])
 def create_class():
-    if not request.form or not "class_name" in request.form or not "class_id" in request.form or not "instructor" in request.form:
-        abort(400)
-    else:
-        class_ = {
-            "class_name" : request.form["class_name"],
-            "class_id"  : request.form["class_id"],
-            "instructor" : request.form["instructor"]
+    data = request.get_json()
+    class_ = {
+            "class_name" : data["class_name"],
+            "class_id"  : data["class_id"],
+            "instructor" : data["instructor"]
         }
     DB['classes'].append(class_)
     return jsonify({"class" : DB['classes']}),201
@@ -89,12 +85,10 @@ def get_class():
 #PATCH class id
 @app.route('/classes/<class_id>', methods=['PATCH'])
 def patch_class(class_id):
-    '''if not "class_id" in request.form:
-        abort(400)
-    else:'''  
+    data = request.get_json()
     class_id = int(request.view_args['class_id'])
     print(class_id)
-    student = [stud for stud in DB['students'] if stud["student_id"]== int(request.form["student_id"])]
+    student = [stud for stud in DB['students'] if stud["student_id"]== int(data["student_id"])]
     print(student)
     #ind = [i for i,cla in enumerate(DB['classes']) if cla["class_id"]== class_id]
     for i,cla in enumerate(DB['classes']):
@@ -103,7 +97,7 @@ def patch_class(class_id):
     
     if "students" in  DB['classes'][ind]:
         for stud in DB['classes'][ind]['students']:
-            if stud['student_id'] == int(request.form["student_id"]):
+            if stud['student_id'] == int(data["student_id"]):
                 return "Student already exists"    
         DB['classes'][ind]['students'].extend(student)
     else:
